@@ -79,7 +79,7 @@ class UserRepository
     {
         $token = Str::random(60);
         $data = $user->id . ';' . $token . ';' . PHP_EOL;
-        file_put_contents('logs.txt', $data , FILE_APPEND | LOCK_EX);
+        file_put_contents(App::basePath().'/storage/users/tokens.txt', $data , FILE_APPEND | LOCK_EX);
 
         return $token;
     }
