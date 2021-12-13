@@ -2,12 +2,20 @@
 
 namespace App\Repositories;
 
+use App\Exceptions\AttemptsExceededException;
+use App\Exceptions\UserNotFoundException;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Str;
 
 class UserRepository
 {
+    /**
+     * @param string $token
+     * @return User|null
+     * @throws UserNotFoundException
+     */
     public static function getByToken(string $token): ?User
     {
         $tokens = file(App::basePath().'/storage/users/tokens.txt');
@@ -34,7 +42,7 @@ class UserRepository
                 break;
             }
         }
-        return null;
+        throw new UserNotFoundException();
     }
 
     public static function getLastId():int
@@ -55,6 +63,11 @@ class UserRepository
         return $userId;
     }
 
+    /**
+     * @param string $name
+     * @return User|null
+     * @throws UserNotFoundException
+     */
     public static function getByName(string $name): ?User
     {
         try{
@@ -72,7 +85,7 @@ class UserRepository
         } finally {
             fclose($handle);
         }
-        return null;
+        throw new UserNotFoundException();
     }
 
     public static function storeToken(User $user)
@@ -94,5 +107,35 @@ class UserRepository
                 unset($tokens[$key]);
             }
         }
+    }
+
+    /**
+     * @param int $id
+     * @throws AttemptsExceededException
+     */
+    public static function checkAttempts(int $id)
+    {
+        $handle = file(App::basePath().'/storage/users/login_attempts.txt');
+        $count = 0;
+
+        foreach ($handle as $key => $value) {
+
+            $attemptString = explode(';', $value);
+            $userId = $attemptString[0];
+            $date = Carbon::parse($attemptString[1]);
+            $isInRange = Carbon::now()->lessThanOrEqualTo($date->addMinutes(5));
+
+            if ($userId == $id && $isInRange) {
+                $count++;
+            }
+            if ($count >= 3) {
+                throw new AttemptsExceededException();
+            }
+        }
+    }
+    public static function setAttempt(int $id)
+    {
+        $data = $id . ';' . Carbon::now()->toDateTimeString() . ';' . PHP_EOL;
+        file_put_contents(App::basePath().'/storage/users/login_attempts.txt', $data , FILE_APPEND | LOCK_EX);
     }
 }
