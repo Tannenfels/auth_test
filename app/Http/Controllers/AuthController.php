@@ -31,4 +31,14 @@ class AuthController extends Controller
 
         return !empty($user) ? response()->view('user.show')->cookie('auth_token', $user->token, 3600) : view('auth.show', compact('errMsg'));
     }
+
+    public function logout(Request $request)
+    {
+        $user = UserRepository::getByToken(trim($request->cookie('auth_token')));
+        if ($user) {
+            UserRepository::deleteToken($user->token);
+        }
+
+        return redirect()->to('/');
+    }
 }

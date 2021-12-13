@@ -31,7 +31,7 @@ class UserRepository
                 } finally {
                     fclose($handle);
                 }
-
+                break;
             }
         }
         return null;
@@ -82,5 +82,17 @@ class UserRepository
         file_put_contents(App::basePath().'/storage/users/tokens.txt', $data , FILE_APPEND | LOCK_EX);
 
         return $token;
+    }
+
+    public static function deleteToken(string $token)
+    {
+        $tokens = file(App::basePath().'/storage/users/tokens.txt');
+
+        foreach ($tokens as $key => $value){
+            $t = explode(';', $value);
+            if($token == $t[1]){
+                unset($tokens[$key]);
+            }
+        }
     }
 }
