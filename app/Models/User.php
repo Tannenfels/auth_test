@@ -6,10 +6,10 @@ use Exception;
 
 class User
 {
-    public int $id;
-    public string $name;
-    public string $hash;
-    public string $token;
+    public $id;
+    public $name;
+    public $hash;
+    public $token;
 
     public function __construct(string $name, string $hash)
     {
