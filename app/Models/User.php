@@ -39,7 +39,7 @@ class User
      */
     public static function createFromFileOutput(int $id, string $name, string $hash): User
     {
-        $user = new User($name);
+        $user = new User($name, $hash);
         $user->setId($id);
 
         return $user;
