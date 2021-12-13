@@ -25,7 +25,7 @@ class AuthController extends Controller
             'name' => 'required',
             'password' => 'required'
         ]);
-        $isAuthorised = AuthService::handle($request);
+        $isAuthorised = empty(AuthService::handle($request));
         $errMsg = 'Неверные данные';
 
         return $isAuthorised ? view('user.show') : view('auth.show', compact('errMsg'));

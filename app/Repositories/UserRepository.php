@@ -4,6 +4,7 @@ namespace App\Repositories;
 
 use App\Models\User;
 use Illuminate\Support\Facades\App;
+use Illuminate\Support\Str;
 
 class UserRepository
 {
@@ -72,5 +73,14 @@ class UserRepository
             fclose($handle);
         }
         return null;
+    }
+
+    public static function storeToken(User $user)
+    {
+        $token = Str::random(60);
+        $data = $user->id . ';' . $token . ';' . PHP_EOL;
+        file_put_contents('logs.txt', $data , FILE_APPEND | LOCK_EX);
+
+        return $token;
     }
 }
