@@ -129,7 +129,8 @@ class UserRepository
                 $count++;
             }
             if ($count >= 3) {
-                throw new AttemptsExceededException();
+                $remains = 300 - Carbon::now()->diffInSeconds($date);
+                throw new AttemptsExceededException("Попробуйте ещё раз через $remains секунд.");
             }
         }
     }

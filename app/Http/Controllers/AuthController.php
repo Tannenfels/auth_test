@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Exceptions\AccessDeniedException;
+use App\Exceptions\AttemptsExceededException;
 use App\Exceptions\UserNotFoundException;
 use App\Repositories\UserRepository;
 use App\Services\AuthService;
@@ -49,6 +50,10 @@ class AuthController extends Controller
             $user = AuthService::handle($request);
         } catch (UserNotFoundException|AccessDeniedException $e){
             $errMsg = 'Неверные данные';
+
+            return view('auth.show', compact('errMsg'));
+        } catch (AttemptsExceededException $attemptsExceededException) {
+            $errMsg = $attemptsExceededException->getMessage();
 
             return view('auth.show', compact('errMsg'));
         }
