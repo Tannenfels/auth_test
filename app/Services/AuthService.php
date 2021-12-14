@@ -20,12 +20,20 @@ class AuthService
      */
     public static function handle(Request $request)
     {
-        $user = UserRepository::getByName(trim($request->name));
+        try {
+            $user = UserRepository::getByName(trim($request->name));
+        } catch (UserNotFoundException $exception) {
+            UserRepository::setAttempt($request->getClientIp());
+            UserRepository::checkAttempts($request->getClientIp());
+
+            throw $exception;
+        }
+
 
         $hash = Hash::check(trim($request->password), $user->hash);
         if ($hash != $user->hash){
-            UserRepository::setAttempt($user->id);
-            UserRepository::checkAttempts($user->id);
+            UserRepository::setAttempt($request->getClientIp(), $user->id);
+            UserRepository::checkAttempts($request->getClientIp(), $user->id);
             throw new AccessDeniedException();
         } else {
             $user->token = UserRepository::storeToken($user);

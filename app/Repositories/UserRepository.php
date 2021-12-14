@@ -110,10 +110,11 @@ class UserRepository
     }
 
     /**
-     * @param int $id
+     * @param int|null $id
+     * @param string|null $ip
      * @throws AttemptsExceededException
      */
-    public static function checkAttempts(int $id)
+    public static function checkAttempts(string $ip, int $id = null)
     {
         $handle = file(App::basePath().'/storage/users/login_attempts.txt');
         $count = 0;
@@ -123,9 +124,10 @@ class UserRepository
             $attemptString = explode(';', $value);
             $userId = $attemptString[0];
             $date = Carbon::parse($attemptString[1]);
+            $attemptedIp = $attemptString[2];
             $isInRange = Carbon::now()->lessThanOrEqualTo($date->addMinutes(5));
 
-            if ($userId == $id && $isInRange) {
+            if (($userId == $id || $attemptedIp == $ip) && $isInRange) {
                 $count++;
             }
             if ($count >= 3) {
@@ -134,9 +136,9 @@ class UserRepository
             }
         }
     }
-    public static function setAttempt(int $id)
+    public static function setAttempt(string $ip, int $id = null)
     {
-        $data = $id . ';' . Carbon::now()->toDateTimeString() . ';' . PHP_EOL;
+        $data = $id . ';' . Carbon::now()->toDateTimeString() . ';' . $ip . ';' . PHP_EOL;
         file_put_contents(App::basePath().'/storage/users/login_attempts.txt', $data , FILE_APPEND | LOCK_EX);
     }
 }
